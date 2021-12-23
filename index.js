@@ -123,7 +123,7 @@ function getZipArgs (inPath, outPath) {
     return [
       '-nologo',
       '-noprofile',
-      '-command', '& { param([String]$myInPath, [String]$myOutPath); Add-Type -A "System.IO.Compression.FileSystem"; [IO.Compression.ZipFile]::CreateFromDirectory($myInPath, $myOutPath); exit !$? }',
+      '-command', '& { param([String]$myInPath, [String]$myOutPath); Add-Type -A "System.IO.Compression.FileSystem"; [IO.Compression.ZipFile]::CreateFromDirectory($myInPath, $myOutPath, [IO.Compression.CompressionLevel]::Optimal, 0); exit !$? }',
       '-myInPath', quotePath(inPath),
       '-myOutPath', quotePath(outPath)
     ]
