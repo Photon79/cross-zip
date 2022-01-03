@@ -79,7 +79,7 @@ function zipSync (inPath, outPath) {
     }
 
     var opts = {
-      cwd: inStat.isDir() ? inPath: path.dirname(inPath),
+      cwd: inStat.isDirectory() ? inPath: path.dirname(inPath),
       maxBuffer: Infinity
     }
     cp.execFileSync(getZipCommand(), getZipArgs(inPath, outPath), opts)
@@ -135,7 +135,7 @@ function getZipArgs (inPath, outPath) {
   } else {
     try {
       const inStat = fs.statSync(inPath);
-      var fileName = inStat.isDir() ? '.' : path.basename(inPath)
+      var fileName = inStat.isDirectory() ? '.' : path.basename(inPath)
       return ['-r', '-y', '-9', outPath, fileName]
     } catch (e) { }
   }
