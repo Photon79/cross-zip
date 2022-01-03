@@ -64,21 +64,26 @@ function zip (inPath, outPath, cb) {
 }
 
 function zipSync (inPath, outPath) {
-  if (process.platform === 'win32') {
-    if (fs.statSync(inPath).isFile()) {
-      var inFile = fs.readFileSync(inPath)
-      var tmpPath = path.join(os.tmpdir(), 'cross-zip-' + Date.now())
-      fs.mkdirSync(tmpPath)
-      fs.writeFileSync(path.join(tmpPath, path.basename(inPath)), inFile)
-      inPath = tmpPath
+  try {
+    const inStat = fs.statSync(inPath);
+
+    if (process.platform === 'win32') {
+      if (inStat.isFile()) {
+        var inFile = fs.readFileSync(inPath)
+        var tmpPath = path.join(os.tmpdir(), 'cross-zip-' + Date.now())
+        fs.mkdirSync(tmpPath)
+        fs.writeFileSync(path.join(tmpPath, path.basename(inPath)), inFile)
+        inPath = tmpPath
+      }
+      fs.rmSync(outPath, { recursive: true, maxRetries: 3, force: true })
     }
-    fs.rmSync(outPath, { recursive: true, maxRetries: 3, force: true })
-  }
-  var opts = {
-    cwd: path.dirname(inPath),
-    maxBuffer: Infinity
-  }
-  cp.execFileSync(getZipCommand(), getZipArgs(inPath, outPath), opts)
+
+    var opts = {
+      cwd: inStat.isDir() ? inPath: path.dirname(inPath),
+      maxBuffer: Infinity
+    }
+    cp.execFileSync(getZipCommand(), getZipArgs(inPath, outPath), opts)
+  } catch (e) { }
 }
 
 function unzip (inPath, outPath, cb) {
@@ -128,8 +133,11 @@ function getZipArgs (inPath, outPath) {
       '-myOutPath', quotePath(outPath)
     ]
   } else {
-    var fileName = path.basename(inPath)
-    return ['-r', '-y', outPath, fileName]
+    try {
+      const inStat = fs.statSync(inPath);
+      var fileName = inStat.isDir() ? '.' : path.basename(inPath)
+      return ['-r', '-y', '-9', outPath, fileName]
+    } catch (e) { }
   }
 }
 
